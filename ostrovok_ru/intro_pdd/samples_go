@@ -1,0 +1,51 @@
+package analrepo
+
+import "encoding/json"
+//StartAcceptTransaction OMIT
+func (h *Handlers) AcceptTransaction(ctx *fasthhtp.RequestContext) {
+	var req AcceptTransactionRequest
+	err := json.Unmarshal(h.Body(), &req)
+	if err != nil {
+		errorBadRequest(err)
+		return
+	}
+
+	ok, err := h.service.IsBlockedUser(ctx, ctx.UserValue("user_id"))
+	if err != nil {
+		errorInternal(ctx, err)
+	}
+	if ok {
+		errorForbbidden(ctx, err)
+		return
+	}
+
+	err := h.service.AcceptTransaction(ctx, ctx.UserValue("user_id"), req)
+	if err != nil {
+		errorInternal(ctx, err)
+		return
+	}
+	success(ctx)
+}
+//EndAcceptTransaction OMIT
+//StartRegularHTTP OMIT
+func errorBadRequest(ctx *fasthttp.RequestContext, err error) {
+   data, _ := json.Marshall(err)
+   ctx.SetStatus(401)
+   _ = ctx.Write(data)
+}
+//EndRegularHTTP OMIT
+
+//StartDomainPrimitive OMIT
+var ErrMoneyAmountInvalidFormat = errors.New("money amount has invalid format")
+
+type MoneyAmount int64
+
+func (m MoneyAmount) MarshalJSON() ([]byte, error) {
+	if m <= 0 {
+		return nil, ErrMoneyAmountInvalidFormat
+	}
+
+	return json.Marshal(int64(m))
+}
+
+//EndDomainPrimitive OMIT
