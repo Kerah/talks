@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -20,8 +21,14 @@ func TestSelectRow(t *testing.T) {
 		t.Run("when sql is invalid", func(t *testing.T) {
 			dbMock := NewMockDB(t)
 
-			_, err := SelectRow[int](context.Background(), dbMock, SQL().Select())
+			res, err := SelectRow[int](
+				context.Background(),
+				dbMock,
+				SQL().Select(),
+				pgx.RowTo[int],
+			)
 			require.ErrorIs(t, err, ErrInvalidSql)
+			assert.Zero(t, res)
 		})
 		// EndSqlInvalid OMIT
 		// StartSuccess OMIT
@@ -63,27 +70,31 @@ func TestSelectRow(t *testing.T) {
 				context.Background(),
 				dbMock,
 				SQL().Select("count"),
+				pgx.RowTo[int],
 			)
 			require.NoError(t, err)
 			require.Equal(t, exp, res)
 			// EndSuccessThen OMIT
 		})
+		/*
+			// StartDBFailV1 OMIT
+			t.Run("when fail db", func(t *testing.T) {
+				dbMock := NewMockDB(t)
+				expErr := errors.New(uuid.NewString())
+				dbMock.EXPECT().
+					Query(mock.Anything, "SELECT count").
+					Return(nil, expErr)
 
-		// StartDBFailV1 OMIT
-		t.Run("when fail db", func(t *testing.T) {
-			dbMock := NewMockDB(t)
-			expErr := errors.New(uuid.NewString())
-			dbMock.EXPECT().
-				Query(mock.Anything, "SELECT count").
-				Return(nil, expErr)
-
-			_, err := SelectRow[int](context.Background(),
-				dbMock,
-				SQL().Select("count"),
-			)
-			require.ErrorIs(t, err, expErr)
-		})
-		// EndDBFailV2 OMIT
+				res, err := SelectRow[int](context.Background(),
+					dbMock,
+					SQL().Select("count"),
+					pgx.RowTo[int],
+				)
+				require.ErrorIs(t, err, expErr)
+				assert.Zero(t, res)
+			})
+			// EndDBFailV2 OMIT
+		*/
 
 		t.Run("when fail db", func(t *testing.T) {
 			dbMock := NewMockDB(t)
@@ -94,7 +105,12 @@ func TestSelectRow(t *testing.T) {
 			rows.EXPECT().Close()
 			rows.EXPECT().Err().Return(expErr)
 
-			_, err := SelectRow[int](context.Background(), dbMock, SQL().Select("count"))
+			_, err := SelectRow[int](
+				context.Background(),
+				dbMock,
+				SQL().Select("count"),
+				pgx.RowTo[int],
+			)
 			require.ErrorIs(t, err, expErr)
 		})
 	})

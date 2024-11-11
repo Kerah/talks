@@ -4,10 +4,11 @@ import (
 	"context"
 	"fmt"
 
+	"talks/ostrovok_ru/intro_pdd/pkg/resql"
+
 	sq "github.com/Masterminds/squirrel"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
-	"talks/ostrovok_ru/intro_pdd/pkg/resql"
 )
 
 type DB interface {
@@ -58,7 +59,7 @@ func (repo *Repository) CountDepositsByUserV2(
 		Select("count(id) as total").
 		From("intro.accounts").
 		Where(sq.Eq{"user_id": id})
-	deposit, err = resql.SelectRow[int](ctx, repo.db, query)
+	deposit, err = resql.SelectRow[int](ctx, repo.db, query, pgx.RowTo[int])
 	if err != nil {
 		return 0, fmt.Errorf("error executing select query: %w", err)
 	}

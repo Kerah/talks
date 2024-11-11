@@ -27,24 +27,26 @@ type State struct {
 
 var suite *integration.Container[Deps, State, *Repository]
 
+/*
 func TestRepository_CountDepositsByUser(t *testing.T) {
 	// StartRepoCountV1Empty OMIT
-	/*t.Run("should be able return empty count for unknown user state",
-	func(t *testing.T) {
-		tc := suite.Case(t)
-		cnt, err := tc.SUT.
-			CountDepositsByUser(context.Background(), uuid.New())
-		require.NoError(t, err)
-		assert.Zero(t, cnt)
-	})*/
+	t.Run("should be able return empty count for unknown user state",
+		func(t *testing.T) {
+			tc := suite.Case(t)
+			cnt, err := tc.SUT.
+				CountDepositsByUser(context.Background(), uuid.New())
+			require.NoError(t, err)
+			assert.Zero(t, cnt)
+		})
 	// EndRepoCountV1Empty OMIT
-	/*	t.Run("should be able return error", func(t *testing.T) {
+	t.Run("should be able return error", func(t *testing.T) {
 		tc := suite.Case(t)
 		userId := uuid.New()
 		tc.When(InjectMocks(tc.SUT))
 		tc.Deps.MockDB.EXPECT().Query(mock.Anything, "", userId).Return()
-	})*/
+	})
 }
+*/
 
 func TestRepository_CountDepositsByUserV2(t *testing.T) {
 	t.Run("should be able return empty count for unknown user state",

@@ -33,13 +33,14 @@ func SelectRow[T any](
 	ctx context.Context,
 	db DB,
 	sql sq.SelectBuilder,
+	fn pgx.RowToFunc[T],
 ) (T, error) {
 	query, args, err := sql.ToSql()
 	if err != nil {
 		var zero T
 		return zero, fmt.Errorf("invalid builded sql: %w: %w", ErrInvalidSql, err)
 	}
-	res, err := pgxutil.SelectRow(ctx, db, query, args, pgx.RowTo[T])
+	res, err := pgxutil.SelectRow(ctx, db, query, args, fn)
 	if err != nil {
 		return res, fmt.Errorf("unexpected error: %w", err)
 	}
